@@ -22,20 +22,11 @@ public class UserController {
     @Autowired
     private BookRepository bookRepository;
 
-    // Get all users
+    // Get all users with the books they borrowed
     @GetMapping
     public List<User> getAllUsers() {
         return userRepository.findAll();
     }
-
-    // Get user by ID
-    @GetMapping("/{id}")
-    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
-        return userRepository.findById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());
-    }
-
     // Create a new user
     @PostMapping
     public ResponseEntity<String> createUser(@RequestBody User user) {
@@ -47,26 +38,20 @@ public class UserController {
         return ResponseEntity.ok("User created successfully");
     }
 
-    // Delete a user by ID
-    @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteUser(@PathVariable Integer id) {
-        return userRepository.findById(id).map(user -> {
-            // Check if the user has borrowed books before deletion
-            if (!user.getBorrowedBooks().isEmpty()) {
-                user.getBorrowedBooks().clear();
-                userRepository.save(user);  // Save the user with cleared books
-            }
+
     
-            // Now delete the user
-            userRepository.delete(user);
-            return ResponseEntity.ok("User deleted successfully.");
-        }).orElse(ResponseEntity.notFound().build());
+    // Get user by ID
+    @GetMapping("/{id}")
+    public ResponseEntity<User> getUserById(@PathVariable Integer id) {
+        return userRepository.findById(id)
+        .map(ResponseEntity::ok)
+        .orElse(ResponseEntity.notFound().build());
     }
     
-
     // Borrow a book
     @PostMapping("/{id}/borrow")
-    public ResponseEntity<String> borrowBook(@PathVariable Integer id, @RequestBody Integer bookId) {
+    public ResponseEntity<String> borrowBook(@PathVariable Integer id, @RequestBody Map<String, Integer> request) {
+        Integer bookId = request.get("bookId");
         return userRepository.findById(id).map(user -> {
             if (user.getBorrowedBooks().size() >= 3) {
                 return ResponseEntity.badRequest().body("User cannot borrow more than 3 books.");
@@ -89,7 +74,8 @@ public class UserController {
 
     // Return a book
     @PostMapping("/{id}/return")
-    public ResponseEntity<String> returnBook(@PathVariable Integer id, @RequestBody Integer bookId) {
+    public ResponseEntity<String> returnBook(@PathVariable Integer id, @RequestBody Map<String, Integer> request) {
+        Integer bookId = request.get("bookId");
         return userRepository.findById(id).map(user -> {
             return bookRepository.findById(bookId).map(book -> {
                 if (!user.getBorrowedBooks().contains(book)) {
@@ -105,16 +91,15 @@ public class UserController {
 
         }).orElse(ResponseEntity.notFound().build());
     }
-
-        // Get library stats
+    
+    // Get library statistics
     @GetMapping("/stats")
     public ResponseEntity<Map<String, Integer>> getLibraryStats() {
-        int totalUsers = (int) userRepository.count();  // Total number of users
-        int totalBooks = (int) bookRepository.count();  // Total number of books
-        int availableBooks = (int) bookRepository.findByAvailableTrue().size();  // Number of available books
-        int borrowedBooks = totalBooks - availableBooks;  // Number of borrowed books
+        int totalUsers = (int) userRepository.count();
+        int totalBooks = (int) bookRepository.count();
+        int availableBooks = (int) bookRepository.findByAvailableTrue().size();
+        int borrowedBooks = totalBooks - availableBooks;
 
-        // Create the response map
         Map<String, Integer> stats = new HashMap<>();
         stats.put("totalUsers", totalUsers);
         stats.put("totalBooks", totalBooks);

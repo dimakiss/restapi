@@ -35,7 +35,7 @@ public class BookController {
         return bookRepository.save(book);
     }
 
-    // Update an existing book
+    // Update a book's details
     @PutMapping("/{id}")
     public ResponseEntity<Book> updateBook(@PathVariable Integer id, @RequestBody Book bookDetails) {
         return bookRepository.findById(id).map(book -> {

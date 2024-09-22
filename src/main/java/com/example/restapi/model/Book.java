@@ -13,7 +13,6 @@ public class Book {
     private String author;
     private boolean available = true;
 
-    // Constructors
     public Book() {}
 
     public Book(String title, String author, boolean available) {
@@ -22,7 +21,6 @@ public class Book {
         this.available = available;
     }
 
-    // Getters and setters
     public Integer getId() {
         return id;
     }

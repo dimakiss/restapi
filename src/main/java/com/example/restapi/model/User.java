@@ -12,7 +12,7 @@ public class User {
 
     private String username;
 
-    @Column(nullable = false) // Email is mandatory
+    @Column(nullable = false)
     private String email;
 
     @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -23,7 +23,6 @@ public class User {
     )
     private List<Book> borrowedBooks;
 
-    // Constructors
     public User() {}
 
     public User(String username, String email) {
@@ -31,7 +30,6 @@ public class User {
         this.email = email;
     }
 
-    // Getters and setters
     public Integer getId() {
         return id;
     }
